@@ -2,6 +2,7 @@
 import os
 import json
 import string
+import base64
 
 import requests
 import sys
@@ -20,6 +21,7 @@ URL="http://localhost:9001/dwx/api/v2"
 AUTH="Basic ZWR3c3VzZXI6c2VjcmV0"
 
 headers = {"Authorization": AUTH}
+
 envID = ""
 warehouses = []
 warehouseid = ""
@@ -41,7 +43,12 @@ def getDWXEnvInfo():
     response = requests.get(versionurl, headers=headers)
     print(response.json())
 
+def createWarehouse():
+    global envID
+    cwUrl = str.join("/", [URL, "environments", envID, "warehouses"])
+    global headers
 
+    #response = requests.post(cwUrl, data=)
 
 def getEnvId():
     envIdUrl = str.join("/", [URL, 'environments'])
@@ -95,14 +102,19 @@ def getUpgradeVersion():
 
     upgradeVUrl = str.join("/", [URL, "environments", envID, "llaps", selectedLLAPId, "upgrade-version"])
     response = requests.get(upgradeVUrl, headers=headers)
-    if response.status_code == 200 | response.status_code == 202:
+    if response.ok() :
         print(response.json())
 
 
 #displayEnvInfo()
+
+print("auth header")
+print(base64.standard_b64decode("ZWR3c3VzZXI6c2VjcmV0"))
+
 print("=========")
 print("dwx version:")
 getDWXEnvInfo()
+
 getEnvId()
 print("Environment id is:" + envID)
 
