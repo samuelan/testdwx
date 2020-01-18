@@ -21,7 +21,11 @@ AUTH="Basic ZWR3c3VzZXI6c2VjcmV0"
 
 headers = {"Authorization": AUTH}
 envID = ""
+warehouses = []
 warehouseid = ""
+selectedWHId = ""
+llaps = []
+selectedLLAPId = ""
 
 def displayEnvInfo():
     print("DWX related environment variables:")
@@ -48,19 +52,63 @@ def getEnvId():
         global  envID
         envID = respmap["clusters"][0]["id"]
 
-
-def getDBCId():
-    dbcIdUrl = str.join("/", [URL, "environments", envID, "warehouses"])
+def getWarehouses():
+    whId = str.join("/", [URL, "environments", envID, "warehouses"])
     global headers
     global warehouseid
-    response = requests.get(dbcIdUrl, headers = headers)
+    global warehouses
+    response = requests.get(whId, headers=headers)
     if response.status_code == 200:
         respmap = response.json()
-        warehouseid = respmap
+        warehousedict = respmap['warehouses']
+        warehouses = warehousedict.keys()
 
-displayEnvInfo()
+
+
+def getWarehouseId():
+    global selectedWHId
+    selectedWHId = input('select a warehouse id to work with')
+    whIdUrl = str.join("/", [URL, "environments", envID, "warehouses", selectedWHId])
+    global headers
+    global warehouseid
+    response = requests.get(whIdUrl, headers = headers)
+    if response.status_code == 200:
+        respmap = response.json()
+
+def getLLAPs():
+    whIdUrl = str.join("/", [URL, "environments", envID, "llaps"])
+    global headers
+    global llaps
+    response = requests.get(whIdUrl, headers=headers)
+    if response.status_code == 200:
+        respmap = response.json()
+        llaps = respmap['computes'].keys()
+
+
+def getUpgradeVersion():
+    global llaps
+    for key in llaps:
+        print(key)
+    global selectedLLAPId
+    global headers
+    selectedLLAPId = input("select a compute to work with:")
+
+    upgradeVUrl = str.join("/", [URL, "environments", envID, "llaps", selectedLLAPId, "upgrade-version"])
+    response = requests.get(upgradeVUrl, headers=headers)
+    if response.status_code == 200 | response.status_code == 202:
+        print(response.json())
+
+
+#displayEnvInfo()
 print("=========")
 print("dwx version:")
 getDWXEnvInfo()
 getEnvId()
 print("Environment id is:" + envID)
+
+getWarehouses()
+for key in warehouses:
+    print(key)
+
+getLLAPs()
+getUpgradeVersion()
